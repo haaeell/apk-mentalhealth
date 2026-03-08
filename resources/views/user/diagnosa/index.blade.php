@@ -28,11 +28,11 @@
         <div class="bg-indigo-50 rounded-2xl border border-indigo-100 p-5 mb-6">
             <h3 class="font-bold text-indigo-900 mb-3">📊 Panduan Pilihan Jawaban</h3>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                @foreach(App\Services\CertaintyFactorService::cfUserScale() as $val => $info)
+                @foreach(App\Services\CertaintyFactorService::cfUserScale() as $info)
                     <div class="bg-white rounded-xl p-3 border border-indigo-100">
                         <div class="font-semibold text-gray-800 text-sm">{{ $info['label'] }}</div>
                         <div class="text-xs text-gray-500 mt-0.5">{{ $info['desc'] }}</div>
-                        <div class="text-xs font-mono text-indigo-600 mt-1">CF = {{ number_format($val, 1) }}</div>
+                        <div class="text-xs font-mono text-indigo-600 mt-1">CF = {{ number_format($info['value'], 1) }}</div>
                     </div>
                 @endforeach
             </div>
@@ -83,12 +83,12 @@
                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                                     @foreach($cfScale as $val => $info)
                                         <label class="cursor-pointer">
-                                            <input type="radio" name="answers[{{ $symptom->id }}]" value="{{ $val }}"
+                                            <input type="radio" name="answers[{{ $symptom->id }}]" value="{{ $info['value'] }}"
                                                 @change="updateCount" class="sr-only peer">
                                             <div
                                                 class="p-3 rounded-xl border-2 border-gray-200 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 hover:border-indigo-300 transition-all text-center">
                                                 <div class="font-medium text-gray-800 text-sm">{{ $info['label'] }}</div>
-                                                <div class="text-xs text-gray-400">CF: {{ number_format($val, 1) }}</div>
+                                                <div class="text-xs text-gray-400">CF: {{ number_format($info['value'], 1) }}</div>
                                             </div>
                                         </label>
                                     @endforeach
@@ -112,8 +112,8 @@
 
                         {{-- Tombol ini sekarang langsung submit form native via x-on:click --}}
                         <button type="button" @click="handleSubmit" :disabled="isLoading" :class="answeredCount > 0 && !isLoading
-                                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-lg cursor-pointer'
-                                    : 'bg-gray-300 cursor-not-allowed'"
+                                                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-lg cursor-pointer'
+                                                    : 'bg-gray-300 cursor-not-allowed'"
                             class="px-8 py-3 text-white font-bold rounded-xl transition-all text-sm flex items-center gap-2">
                             <svg x-show="isLoading" class="animate-spin h-4 w-4 text-white"
                                 xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">

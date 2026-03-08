@@ -14,12 +14,12 @@ class CertaintyFactorService
     public static function cfUserScale(): array
     {
         return [
-            0   => ['label' => 'Tidak', 'value' => 0, 'desc' => 'Saya tidak mengalami gejala ini sama sekali', 'color' => 'gray'],
-            0.2 => ['label' => 'Tidak Yakin', 'value' => 0.2, 'desc' => 'Saya tidak yakin apakah mengalami ini', 'color' => 'blue'],
-            0.4 => ['label' => 'Mungkin', 'value' => 0.4, 'desc' => 'Mungkin saya mengalami ini sesekali', 'color' => 'yellow'],
-            0.6 => ['label' => 'Kemungkinan Besar', 'value' => 0.6, 'desc' => 'Saya cukup sering mengalami ini', 'color' => 'orange'],
-            0.8 => ['label' => 'Hampir Pasti', 'value' => 0.8, 'desc' => 'Saya hampir selalu mengalami ini', 'color' => 'red'],
-            1.0 => ['label' => 'Pasti', 'value' => 1.0, 'desc' => 'Saya pasti mengalami gejala ini', 'color' => 'darkred'],
+            ['label' => 'Tidak',            'value' => 0.0, 'desc' => 'Saya tidak mengalami gejala ini sama sekali', 'color' => 'gray'],
+            ['label' => 'Tidak Yakin',      'value' => 0.2, 'desc' => 'Saya tidak yakin apakah mengalami ini',       'color' => 'blue'],
+            ['label' => 'Mungkin',          'value' => 0.4, 'desc' => 'Mungkin saya mengalami ini sesekali',          'color' => 'yellow'],
+            ['label' => 'Kemungkinan Besar', 'value' => 0.6, 'desc' => 'Saya cukup sering mengalami ini',              'color' => 'orange'],
+            ['label' => 'Hampir Pasti',     'value' => 0.8, 'desc' => 'Saya hampir selalu mengalami ini',             'color' => 'red'],
+            ['label' => 'Pasti',            'value' => 1.0, 'desc' => 'Saya pasti mengalami gejala ini',              'color' => 'darkred'],
         ];
     }
 
@@ -63,7 +63,6 @@ class CertaintyFactorService
             foreach ($disorder->disorderSymptoms as $ds) {
                 $symptomId = $ds->symptom_id;
 
-                // Skip jika user tidak memilih gejala ini
                 if (!isset($answers[$symptomId]) || $answers[$symptomId] == 0) {
                     continue;
                 }
@@ -83,7 +82,6 @@ class CertaintyFactorService
             }
         }
 
-        // Sort descending
         arsort($results);
         return $results;
     }
