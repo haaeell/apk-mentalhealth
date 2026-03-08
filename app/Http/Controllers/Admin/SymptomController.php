@@ -8,9 +8,13 @@ use Illuminate\Http\Request;
 
 class SymptomController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $symptoms = Symptom::withCount('disorders')->latest()->paginate(15);
+        $query = Symptom::withCount('disorders')->latest();
+        if ($request->category && $request->category !== 'semua') {
+            $query->where('category', $request->category);
+        }
+        $symptoms = $query->paginate(15)->withQueryString();
         return view('admin.symptoms.index', compact('symptoms'));
     }
 

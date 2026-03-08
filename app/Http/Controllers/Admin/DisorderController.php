@@ -7,12 +7,13 @@ use App\Models\MentalDisorder;
 use App\Models\Symptom;
 use App\Models\DisorderSymptom;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DisorderController extends Controller
 {
     public function index()
     {
-        $disorders = MentalDisorder::withCount('symptoms')->latest()->paginate(10);
+        $disorders = MentalDisorder::withCount('symptoms')->latest()->get();
         return view('admin.disorders.index', compact('disorders'));
     }
 
@@ -25,35 +26,35 @@ class DisorderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'code' => 'required|unique:mental_disorders,code',
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'code'          => 'required|unique:mental_disorders,code',
+            'name'          => 'required|string|max:255',
+            'description'   => 'required|string',
             'recommendation' => 'required|string',
-            'severity' => 'required|in:ringan,sedang,berat',
-            'color_code' => 'nullable|string',
-            'symptoms' => 'nullable|array',
+            'severity'      => 'required|in:ringan,sedang,berat',
+            'color_code'    => 'nullable|string',
+            'image'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'symptoms'      => 'nullable|array',
             'symptoms.*.id' => 'exists:symptoms,id',
             'symptoms.*.mb' => 'numeric|min:0|max:1',
             'symptoms.*.md' => 'numeric|min:0|max:1',
         ]);
 
-        $disorder = MentalDisorder::create($request->only([
-            'code',
-            'name',
-            'description',
-            'recommendation',
-            'severity',
-            'color_code'
-        ]));
+        $data = $request->only(['code', 'name', 'description', 'recommendation', 'severity', 'color_code']);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('disorders', 'public');
+        }
+
+        $disorder = MentalDisorder::create($data);
 
         if ($request->has('symptoms')) {
             foreach ($request->symptoms as $symptom) {
                 if (!empty($symptom['id'])) {
                     DisorderSymptom::create([
                         'mental_disorder_id' => $disorder->id,
-                        'symptom_id' => $symptom['id'],
-                        'mb' => $symptom['mb'],
-                        'md' => $symptom['md'],
+                        'symptom_id'         => $symptom['id'],
+                        'mb'                 => $symptom['mb'],
+                        'md'                 => $symptom['md'],
                     ]);
                 }
             }
@@ -73,22 +74,36 @@ class DisorderController extends Controller
     public function update(Request $request, MentalDisorder $disorder)
     {
         $request->validate([
-            'code' => 'required|unique:mental_disorders,code,' . $disorder->id,
-            'name' => 'required|string|max:255',
-            'description' => 'required|string',
+            'code'          => 'required|unique:mental_disorders,code,' . $disorder->id,
+            'name'          => 'required|string|max:255',
+            'description'   => 'required|string',
             'recommendation' => 'required|string',
-            'severity' => 'required|in:ringan,sedang,berat',
+            'severity'      => 'required|in:ringan,sedang,berat',
+            'color_code'    => 'nullable|string',
+            'image'         => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'symptoms'      => 'nullable|array',
+            'symptoms.*.id' => 'exists:symptoms,id',
+            'symptoms.*.mb' => 'numeric|min:0|max:1',
+            'symptoms.*.md' => 'numeric|min:0|max:1',
         ]);
 
-        $disorder->update($request->only([
-            'code',
-            'name',
-            'description',
-            'recommendation',
-            'severity',
-            'color_code',
-            'is_active'
-        ]));
+        $data = $request->only(['code', 'name', 'description', 'recommendation', 'severity', 'color_code', 'is_active']);
+
+        // Handle hapus foto
+        if ($request->boolean('remove_image') && $disorder->image) {
+            Storage::disk('public')->delete($disorder->image);
+            $data['image'] = null;
+        }
+
+        // Handle upload foto baru
+        if ($request->hasFile('image')) {
+            if ($disorder->image) {
+                Storage::disk('public')->delete($disorder->image);
+            }
+            $data['image'] = $request->file('image')->store('disorders', 'public');
+        }
+
+        $disorder->update($data);
 
         // Update symptoms
         $disorder->disorderSymptoms()->delete();
@@ -97,9 +112,9 @@ class DisorderController extends Controller
                 if (!empty($symptom['id'])) {
                     DisorderSymptom::create([
                         'mental_disorder_id' => $disorder->id,
-                        'symptom_id' => $symptom['id'],
-                        'mb' => $symptom['mb'],
-                        'md' => $symptom['md'],
+                        'symptom_id'         => $symptom['id'],
+                        'mb'                 => $symptom['mb'],
+                        'md'                 => $symptom['md'],
                     ]);
                 }
             }
@@ -111,6 +126,9 @@ class DisorderController extends Controller
 
     public function destroy(MentalDisorder $disorder)
     {
+        if ($disorder->image) {
+            Storage::disk('public')->delete($disorder->image);
+        }
         $disorder->delete();
         return redirect()->route('admin.disorders.index')
             ->with('success', 'Gangguan mental berhasil dihapus!');

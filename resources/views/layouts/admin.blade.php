@@ -11,11 +11,158 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
+
+<style>
+    /* Controls bar */
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_filter {
+        margin-bottom: 1.25rem;
+    }
+
+    .dataTables_wrapper .dataTables_filter {
+        float: none !important;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .dataTables_wrapper .dataTables_filter label,
+    .dataTables_wrapper .dataTables_length label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: #9ca3af;
+        font-weight: 500;
+    }
+
+    .dataTables_wrapper .dataTables_filter input {
+        border: 1.5px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        outline: none;
+        width: 220px;
+        background: #f9fafb;
+        transition: all 0.2s;
+        color: #374151;
+    }
+
+    .dataTables_wrapper .dataTables_filter input:focus {
+        border-color: #6366f1;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+    }
+
+    .dataTables_wrapper .dataTables_length select {
+        border: 1.5px solid #e5e7eb;
+        border-radius: 0.75rem;
+        padding: 0.45rem 0.75rem;
+        font-size: 0.8rem;
+        background: #f9fafb;
+        outline: none;
+        cursor: pointer;
+        color: #374151;
+    }
+
+    /* Table overrides */
+    table.dataTable {
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        width: 100% !important;
+    }
+
+    table.dataTable thead th {
+        background: #f9fafb !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.07em !important;
+        color: #9ca3af !important;
+        padding: 0.875rem 1rem !important;
+        border: none !important;
+        border-bottom: 1px solid #f3f4f6 !important;
+        white-space: nowrap;
+    }
+
+    table.dataTable thead th.sorting:after,
+    table.dataTable thead th.sorting_asc:after,
+    table.dataTable thead th.sorting_desc:after {
+        opacity: 0.3 !important;
+    }
+
+    table.dataTable tbody td {
+        padding: 0.85rem 1rem !important;
+        border: none !important;
+        border-bottom: 1px solid #f9fafb !important;
+        vertical-align: middle;
+        color: #374151;
+    }
+
+    table.dataTable tbody tr:hover td {
+        background-color: #fafafa !important;
+    }
+
+    table.dataTable tbody tr:last-child td {
+        border-bottom: none !important;
+    }
+
+    /* Bottom bar */
+    .dataTables_wrapper .dataTables_info {
+        font-size: 0.78rem;
+        color: #9ca3af;
+        padding-top: 1rem;
+    }
+
+    .dataTables_wrapper .dataTables_paginate {
+        padding-top: 0.75rem;
+        display: flex;
+        gap: 0.2rem;
+        align-items: center;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 2rem;
+        height: 2rem;
+        padding: 0 0.6rem !important;
+        font-size: 0.8rem !important;
+        border-radius: 0.6rem !important;
+        border: none !important;
+        background: transparent !important;
+        color: #6b7280 !important;
+        cursor: pointer;
+        transition: all 0.15s;
+        box-shadow: none !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background: #e0e7ff !important;
+        color: #4338ca !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        background: #6366f1 !important;
+        color: white !important;
+        font-weight: 600 !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+        color: #d1d5db !important;
+        cursor: not-allowed;
+        background: transparent !important;
+    }
+</style>
+@stack('styles')
+
 <body class="bg-gray-100 font-sans antialiased" x-data="{ sidebarOpen: true }">
 
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <div class="bg-gradient-to-b from-indigo-900 to-indigo-800 text-white transition-all duration-300"
+        <div class="bg-gradient-to-b from-indigo-900 to-indigo-800 text-white transition-all duration-300 flex flex-col"
             :class="sidebarOpen ? 'w-64' : 'w-16'">
             <!-- Logo -->
             <div class="flex items-center h-16 px-4 border-b border-indigo-700">
@@ -46,7 +193,7 @@
 
                 @foreach($navItems as $item)
                             <a href="{{ route($item['route']) }}" class="flex items-center space-x-3 px-3 py-2.5 rounded-xl mb-1 transition-all duration-200
-                                  {{ request()->routeIs($item['route'] . '*')
+                                                                                                          {{ request()->routeIs($item['route'] . '*')
                     ? 'bg-white/20 text-white font-medium'
                     : 'text-indigo-200 hover:bg-white/10 hover:text-white' }}">
                                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,19 +205,19 @@
             </nav>
 
             <!-- User Info bottom -->
-            <div class="absolute bottom-0 left-0 right-0 p-3 border-t border-indigo-700" x-show="sidebarOpen"
-                x-transition>
+            <div class="mt-auto p-3 border-t border-indigo-700">
                 <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-sm font-bold">
+                    <div
+                        class="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0">
                         {{ substr(auth()->user()->name, 0, 1) }}
                     </div>
-                    <div class="flex-1 min-w-0">
+                    <div x-show="sidebarOpen" x-transition class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-white truncate">{{ auth()->user()->name }}</p>
                         <p class="text-xs text-indigo-300">Administrator</p>
                     </div>
-                    <form action="{{ route('logout') }}" method="POST">
+                    <form x-show="sidebarOpen" action="{{ route('logout') }}" method="POST">
                         @csrf
-                        <button type="submit" class="text-indigo-300 hover:text-white transition-colors">
+                        <button type="submit" class="text-indigo-300 hover:text-white transition-colors" title="Logout">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -119,13 +266,19 @@
                 @endif
                 @if(session('error'))
                     <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-800 text-sm">
-                        {{ session('error') }}</div>
+                        {{ session('error') }}
+                    </div>
                 @endif
 
                 @yield('content')
             </main>
         </div>
     </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    @stack('scripts')
 
 </body>
 

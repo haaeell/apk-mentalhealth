@@ -1,11 +1,15 @@
 @extends('layouts.admin')
-@section('title', 'Tambah Gangguan Mental')
-@section('page-title', 'Tambah Gangguan Mental')
+@section('title', 'Edit Gangguan Mental')
+@section('page-title', 'Edit Gangguan Mental')
 @section('content')
 
-    <div class="max-w-3xl" x-data="{ selectedSymptoms: [], imagePreview: '' }">
-        <form action="{{ route('admin.disorders.store') }}" method="POST" enctype="multipart/form-data">
+    <div class="max-w-3xl" x-data="{
+            selectedSymptoms: {{ json_encode($disorderSymptoms->map(fn($ds) => ['id' => $ds->symptom_id, 'mb' => $ds->mb, 'md' => $ds->md])) }},
+            imagePreview: '{{ $disorder->image ? Storage::url($disorder->image) : '' }}'
+        }">
+        <form action="{{ route('admin.disorders.update', $disorder) }}" method="POST" enctype="multipart/form-data">
             @csrf
+            @method('PUT')
             <div class="space-y-6">
 
                 <!-- Info Dasar -->
@@ -15,7 +19,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kode <span
                                     class="text-red-500">*</span></label>
-                            <input type="text" name="code" value="{{ old('code') }}" class="input-field" placeholder="P001"
+                            <input type="text" name="code" value="{{ old('code', $disorder->code) }}" class="input-field"
                                 required>
                             @error('code') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -24,40 +28,51 @@
                                     class="text-red-500">*</span></label>
                             <select name="severity" class="input-field" required>
                                 <option value="">Pilih Tingkat</option>
-                                <option value="ringan" {{ old('severity') == 'ringan' ? 'selected' : '' }}>Ringan</option>
-                                <option value="sedang" {{ old('severity') == 'sedang' ? 'selected' : '' }}>Sedang</option>
-                                <option value="berat" {{ old('severity') == 'berat' ? 'selected' : '' }}>Berat</option>
+                                <option value="ringan" {{ old('severity', $disorder->severity) == 'ringan' ? 'selected' : '' }}>Ringan</option>
+                                <option value="sedang" {{ old('severity', $disorder->severity) == 'sedang' ? 'selected' : '' }}>Sedang</option>
+                                <option value="berat" {{ old('severity', $disorder->severity) == 'berat' ? 'selected' : '' }}>
+                                    Berat</option>
                             </select>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nama Gangguan <span
                                     class="text-red-500">*</span></label>
-                            <input type="text" name="name" value="{{ old('name') }}" class="input-field" required>
+                            <input type="text" name="name" value="{{ old('name', $disorder->name) }}" class="input-field"
+                                required>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi <span
                                     class="text-red-500">*</span></label>
                             <textarea name="description" rows="3" class="input-field resize-none"
-                                required>{{ old('description') }}</textarea>
+                                required>{{ old('description', $disorder->description) }}</textarea>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Rekomendasi Tindakan <span
                                     class="text-red-500">*</span></label>
-                            <textarea name="recommendation" rows="4" class="input-field resize-none" placeholder="1. ..."
-                                required>{{ old('recommendation') }}</textarea>
+                            <textarea name="recommendation" rows="4" class="input-field resize-none"
+                                required>{{ old('recommendation', $disorder->recommendation) }}</textarea>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kode Warna (Hex)</label>
-                            <input type="color" name="color_code" value="{{ old('color_code', '#6366f1') }}"
+                            <input type="color" name="color_code"
+                                value="{{ old('color_code', $disorder->color_code ?? '#6366f1') }}"
                                 class="h-10 w-full rounded-xl border border-gray-200 cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                            <select name="is_active" class="input-field">
+                                <option value="1" {{ old('is_active', $disorder->is_active) == 1 ? 'selected' : '' }}>Aktif
+                                </option>
+                                <option value="0" {{ old('is_active', $disorder->is_active) == 0 ? 'selected' : '' }}>Nonaktif
+                                </option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
                 <!-- Foto -->
                 <div class="bg-white rounded-2xl border border-gray-100 p-6">
-                    <h3 class="font-bold text-gray-900 mb-4">Foto Gangguan <span
-                            class="text-gray-400 font-normal text-sm">(opsional)</span></h3>
+                    <h3 class="font-bold text-gray-900 mb-4">Foto Gangguan</h3>
                     <div class="flex items-start gap-5">
                         <!-- Preview -->
                         <div class="flex-shrink-0">
@@ -76,18 +91,26 @@
                             </template>
                         </div>
                         <!-- Upload -->
-                        <label
-                            class="flex-1 block border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center cursor-pointer hover:border-indigo-300 hover:bg-indigo-50 transition-all">
-                            <svg class="w-6 h-6 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
-                            <p class="text-sm text-gray-500">Klik untuk upload foto</p>
-                            <p class="text-xs text-gray-400 mt-1">PNG, JPG, WEBP maks. 2MB</p>
-                            <input type="file" name="image" accept="image/*" class="hidden"
-                                @change="imagePreview = URL.createObjectURL($event.target.files[0])">
-                        </label>
+                        <div class="flex-1">
+                            <label
+                                class="block w-full border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center cursor-pointer hover:border-indigo-300 hover:bg-indigo-50 transition-all">
+                                <svg class="w-6 h-6 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                <p class="text-sm text-gray-500">Klik untuk upload foto baru</p>
+                                <p class="text-xs text-gray-400 mt-1">PNG, JPG, WEBP maks. 2MB</p>
+                                <input type="file" name="image" accept="image/*" class="hidden"
+                                    @change="imagePreview = URL.createObjectURL($event.target.files[0])">
+                            </label>
+                            @if($disorder->image)
+                                <label class="flex items-center gap-2 mt-3 text-sm text-gray-500 cursor-pointer">
+                                    <input type="checkbox" name="remove_image" value="1" class="rounded">
+                                    Hapus foto saat ini
+                                </label>
+                            @endif
+                        </div>
                     </div>
                 </div>
 
@@ -105,8 +128,8 @@
                     </div>
 
                     <div class="bg-blue-50 rounded-xl p-4 mb-4 text-blue-800 text-sm">
-                        <strong>📘 Panduan:</strong> MB = Measure of Belief (kepercayaan gejala menunjukkan gangguan ini),
-                        MD = Measure of Disbelief (ketidakpercayaan). MB + MD ≤ 1. CF = MB - MD.
+                        <strong>📘 Panduan:</strong> MB = Measure of Belief, MD = Measure of Disbelief. MB + MD ≤ 1. CF = MB
+                        - MD.
                     </div>
 
                     <template x-for="(sym, index) in selectedSymptoms" :key="index">
@@ -140,12 +163,12 @@
                     </template>
 
                     <div x-show="selectedSymptoms.length === 0" class="text-center py-8 text-gray-400 text-sm">
-                        Belum ada gejala ditambahkan. Klik "+ Tambah Gejala" di atas.
+                        Belum ada gejala. Klik "+ Tambah Gejala" di atas.
                     </div>
                 </div>
 
                 <div class="flex items-center space-x-3">
-                    <button type="submit" class="btn-primary">Simpan Gangguan</button>
+                    <button type="submit" class="btn-primary">Simpan Perubahan</button>
                     <a href="{{ route('admin.disorders.index') }}" class="btn-secondary">Batal</a>
                 </div>
             </div>

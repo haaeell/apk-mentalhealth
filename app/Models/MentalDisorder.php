@@ -16,7 +16,8 @@ class MentalDisorder extends Model
         'recommendation',
         'severity',
         'color_code',
-        'is_active'
+        'is_active',
+        'image',
     ];
 
     protected $casts = [
